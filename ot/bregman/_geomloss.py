@@ -13,8 +13,14 @@ try:
     import geomloss
     from geomloss import SamplesLoss
     import torch
-    from torch.autograd import grad
     from ..utils import get_backend, LazyTensor, dist
+    from warnings import warn
+
+    if geomloss.__version__ < "0.3.1":
+        old_geomloss = True
+    else:
+        old_geomloss = False
+
 except ImportError:
     geomloss = False
 
@@ -215,10 +221,6 @@ def empirical_sinkhorn2_geomloss(
         else:
             raise ValueError("geomloss only supports sqeuclidean and euclidean metrics")
 
-        # force gradients for computing dual
-        a_torch.requires_grad = True
-        b_torch.requires_grad = True
-
         loss = SamplesLoss(
             loss="sinkhorn",
             p=p,
@@ -234,26 +236,17 @@ def empirical_sinkhorn2_geomloss(
             a_torch, X_s_torch, b_torch, X_t_torch
         )  # linear + entropic/KL reg?
 
-        # get dual potentials
-        f, g = grad(value, [a_torch, b_torch])
-
         if metric == "sqeuclidean":
             value *= 2  # because geomloss divides cost by two
 
         if nx.__name__ == "numpy":
-            f = f.cpu().detach().numpy()
-            g = g.cpu().detach().numpy()
             value = value.cpu().detach().numpy()
 
         if log:
             log = {}
-            log["f"] = f
-            log["g"] = g
             log["value"] = value
-
-            log["lazy_plan"] = get_sinkhorn_geomloss_lazytensor(
-                X_s, X_t, f, g, a, b, metric=metric, blur=blur, nx=nx
-            )
+            warn("""Deprecation warning: log does not return dual potentials and OT plans
+                 anymore. Use ot.solve_sample with method='geomloss' to get the OT plan and dual potentials.""")
 
             return value, log
 
