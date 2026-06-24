@@ -15,7 +15,6 @@ from ..unbalanced import mm_unbalanced, sinkhorn_knopp_unbalanced, lbfgsb_unbala
 from ..bregman import (
     sinkhorn_log,
     empirical_sinkhorn2,
-    empirical_sinkhorn2_geomloss,
     empirical_sinkhorn_nystroem2,
     old_geomloss,
 )
@@ -24,6 +23,7 @@ from ..gaussian import empirical_bures_wasserstein_distance
 from ..factored import factored_optimal_transport
 from ..lowrank import lowrank_sinkhorn
 from ..optim import cg
+from warnings import warn
 
 
 lst_method_lazy = [
@@ -1176,32 +1176,16 @@ def solve_sample(
                     backend = "online"
                 else:
                     backend = "tensorized"
-
-            print("Using Geomloss backend: {}".format(backend))
+            if lazy0 is None:
+                warn(
+                    f"geomloss backend is set to '{backend}' but is not yet supported by unified geomloss API yet."
+                )
 
             if old_geomloss:  # old wrapper for old geomloss versions
-                value, log = empirical_sinkhorn2_geomloss(
-                    X_a,
-                    X_b,
-                    reg=reg,
-                    a=a,
-                    b=b,
-                    metric=metric,
-                    log=True,
-                    verbose=verbose,
-                    scaling=scaling,
-                    backend=backend,
+                raise NotImplementedError(
+                    "geomloss version >= 0.3.1 required for ot.solve_sample() geomloss backend."
                 )
 
-                lazy_plan = log["lazy_plan"]
-                if not lazy0:  # store plan if not lazy
-                    plan = lazy_plan[:]
-
-                # return scaled potentials (to be consistent with other solvers)
-                potentials = (
-                    log["f"] / (lazy_plan.blur**2),
-                    log["g"] / (lazy_plan.blur**2),
-                )
             else:  # new geomloss wrapper
                 import geomloss.ot as got
 
