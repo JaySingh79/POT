@@ -17,6 +17,7 @@ from ..bregman import (
     empirical_sinkhorn2,
     empirical_sinkhorn2_geomloss,
     empirical_sinkhorn_nystroem2,
+    old_geomloss,
 )
 from ..smooth import smooth_ot_dual
 from ..gaussian import empirical_bures_wasserstein_distance
@@ -1176,28 +1177,51 @@ def solve_sample(
                 else:
                     backend = "tensorized"
 
-            value, log = empirical_sinkhorn2_geomloss(
-                X_a,
-                X_b,
-                reg=reg,
-                a=a,
-                b=b,
-                metric=metric,
-                log=True,
-                verbose=verbose,
-                scaling=scaling,
-                backend=backend,
-            )
+            print("Using Geomloss backend: {}".format(backend))
 
-            lazy_plan = log["lazy_plan"]
-            if not lazy0:  # store plan if not lazy
-                plan = lazy_plan[:]
+            if old_geomloss:  # old wrapper for old geomloss versions
+                value, log = empirical_sinkhorn2_geomloss(
+                    X_a,
+                    X_b,
+                    reg=reg,
+                    a=a,
+                    b=b,
+                    metric=metric,
+                    log=True,
+                    verbose=verbose,
+                    scaling=scaling,
+                    backend=backend,
+                )
 
-            # return scaled potentials (to be consistent with other solvers)
-            potentials = (
-                log["f"] / (lazy_plan.blur**2),
-                log["g"] / (lazy_plan.blur**2),
-            )
+                lazy_plan = log["lazy_plan"]
+                if not lazy0:  # store plan if not lazy
+                    plan = lazy_plan[:]
+
+                # return scaled potentials (to be consistent with other solvers)
+                potentials = (
+                    log["f"] / (lazy_plan.blur**2),
+                    log["g"] / (lazy_plan.blur**2),
+                )
+            else:  # new geomloss wrapper
+                import geomloss.ot as got
+
+                if max_iter is None:
+                    max_iter = 1000
+
+                res = got.solve_sample(
+                    X_a,
+                    X_b,
+                    a=a,
+                    b=b,
+                    reg=reg,
+                    cost=metric,
+                    unbalanced=unbalanced,
+                    unbalanced_type=unbalanced_type,
+                    max_iter=max_iter,
+                    tol=tol,
+                )
+                res.value_linear = None
+                return res
 
         elif reg is None or reg == 0:  # exact OT
             if unbalanced is None:  # balanced EMD solver not available for lazy
