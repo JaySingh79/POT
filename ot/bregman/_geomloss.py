@@ -133,6 +133,11 @@ def empirical_sinkhorn2_geomloss(
     better stability and epsilon-scaling. The solution is computed in a lazy way
     using the Geomloss [60]_ and the KeOps library [61]_.
 
+    ..warning::
+        The Geomloss library is required for this function to work. Also
+        when setting `log=True`, the dual potentials are computed using autograd and
+        may be slow for large problems and prevent computing backward gradients.
+
     Parameters
     ----------
     X_s : array-like, shape (n_samples_a, dim)
