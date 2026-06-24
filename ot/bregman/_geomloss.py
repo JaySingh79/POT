@@ -23,6 +23,7 @@ try:
 
 except ImportError:
     geomloss = False
+    old_geomloss = False
 
 
 def get_sinkhorn_geomloss_lazytensor(
