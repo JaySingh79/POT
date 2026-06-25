@@ -101,14 +101,16 @@ jobs:
       uses: codecov/codecov-action@v4
 
   linux-minimal-deps:
-
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     if: "!contains(github.event.head_commit.message, 'no ci')"
+    strategy:
+       max-parallel: 4
+       matrix:
+         os: [ubuntu-latest, ubuntu-24.04-arm]
     steps:
     - uses: actions/checkout@v7
       with:
         submodules: true
-
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
