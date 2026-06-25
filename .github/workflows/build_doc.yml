@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         submodules: true
     # Standard drop-in approach that should work for most people.
@@ -45,7 +45,7 @@ jobs:
       uses: rickstaa/sphinx-action@master
       with:
         docs-folder: "docs/"
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: Documentation
         path: docs/build/html/

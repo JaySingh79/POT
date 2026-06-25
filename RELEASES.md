@@ -1,8 +1,8 @@
 # Releases
 
-## 0.9.7.dev0## 0.9.7.dev0
+## 0.9.7
 
-This new release adds support for sparse cost matrices and a new lazy EMD solver that computes distances on-the-fly from coordinates, reducing memory usage from O(n×m) to O(n+m). Both implementations are backend-agnostic and preserve gradient computation for automatic differentiation.
+This new release adds support for sparse cost matrices and a new lazy exact OT solver that re-computes distances on-the-fly from coordinates, reducing memory usage from O(n×m) to O(n+m). Both implementations are backend-agnostic and preserve gradient computation for automatic differentiation. 
 
 #### New features 
 

@@ -27,7 +27,7 @@ jobs:
 
 
     - name: Checking Out Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: true
     # Install Python & Packages
@@ -44,12 +44,12 @@ jobs:
   build_from_source:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         submodules: true
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "3.14"
     - name: Build from source
@@ -74,7 +74,7 @@ jobs:
       with:
         android: true
         dotnet: true
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         submodules: true
 
@@ -105,12 +105,12 @@ jobs:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'no ci')"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         submodules: true
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "3.14"
         cache: 'pip'
@@ -160,11 +160,11 @@ jobs:
          python-version: ["3.13"]
 
      steps:
-     - uses: actions/checkout@v4
+     - uses: actions/checkout@v7
        with:
         submodules: true
      - name: Set up Python ${{ matrix.python-version }}
-       uses: actions/setup-python@v5
+       uses: actions/setup-python@v6
        with:
          python-version: ${{ matrix.python-version }}
          cache: 'pip'
@@ -190,11 +190,11 @@ jobs:
         python-version: ["3.13"]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         submodules: true
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
