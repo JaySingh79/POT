@@ -91,7 +91,7 @@ jobs:
         pip install -e .
     - name: Run tests
       run: |
-        python -m pytest -v ot/ --doctest-modules --color=yes --cov=./ --cov-report=xml
+        python -m pytest -v ot/ test/conftest.py --doctest-modules --color=yes --cov=./ --cov-report=xml
 
   linux-minimal:
 
