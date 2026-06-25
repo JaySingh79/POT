@@ -178,7 +178,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools
-        pip install torch torch_geometric geomloss pykeops
+        pip install torch torch_geometric geomloss pykeops scikit-learn
         pip install pytest pytest-cov
     - name: Run tests
       run: |
