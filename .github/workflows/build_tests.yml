@@ -251,7 +251,7 @@ jobs:
        max-parallel: 4
        matrix:
          os: [macos-latest]
-         python-version: [${{ env.PY_VERSION }}]
+         python-version: [${{ env.PY_VERSION }},]
 
      steps:
      - uses: actions/checkout@v7
@@ -281,7 +281,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [${{ env.PY_VERSION }}]
+        python-version: [${{ env.PY_VERSION }},]
 
     steps:
     - uses: actions/checkout@v7
