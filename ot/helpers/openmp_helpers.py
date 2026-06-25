@@ -10,7 +10,7 @@ import subprocess
 
 from setuptools.errors import CompileError, LinkError
 
-from pre_build_helpers import compile_test_program
+from .pre_build_helpers import compile_test_program
 
 
 def get_openmp_flag(compiler):
