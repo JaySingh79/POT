@@ -84,7 +84,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools
-        pip install -r requirements_all.txt
+        pip install -r .github/requirements_doctests.txt
         pip install pytest pytest-cov
     - name: Install POT
       run: |
@@ -286,7 +286,7 @@ jobs:
      - name: Install dependencies
        run: |
          python -m pip install --upgrade pip setuptools
-         pip install -r requirements_all.txt
+         pip install -r .github/requirements_no_backend.txt
          pip install pytest
      - name: Run tests
        run: |
