@@ -61,7 +61,7 @@ jobs:
 
   linux:
 
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'no ci')"
     strategy:
       max-parallel: 4
@@ -69,11 +69,11 @@ jobs:
         python-version: ["3.11", "3.12", "3.13", "3.14"]
 
     steps:
-    # - name: Free Disk Space (Ubuntu)
-    #   uses: insightsengineering/disk-space-reclaimer@v1
-    #   with:
-    #     android: true
-    #     dotnet: true
+    - name: Free Disk Space (Ubuntu)
+      uses: insightsengineering/disk-space-reclaimer@v1
+      with:
+        android: true
+        dotnet: true
     - uses: actions/checkout@v7
       with:
         submodules: true
@@ -101,6 +101,7 @@ jobs:
       uses: codecov/codecov-action@v4
 
   linux-minimal-deps:
+
     runs-on: ${{ matrix.os }}
     if: "!contains(github.event.head_commit.message, 'no ci')"
     strategy:
@@ -111,6 +112,7 @@ jobs:
     - uses: actions/checkout@v7
       with:
         submodules: true
+
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
