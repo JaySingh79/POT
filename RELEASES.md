@@ -2,11 +2,19 @@
 
 ## 0.9.7
 
-This new release adds support for sparse cost matrices and a new lazy exact OT solver that re-computes distances on-the-fly from coordinates, reducing memory usage from O(n×m) to O(n+m). Both implementations are backend-agnostic and preserve gradient computation for automatic differentiation. 
+This new release adds support for sparse cost matrices and a new lazy exact OT solver that re-computes distances on-the-fly from coordinates, reducing memory usage from O(n×m) to O(n+m). Both implementations are backend-agnostic and preserve gradient computation for automatic differentiation. Another major feature is the addition of a warmstart feature for the EMD solver, allowing users to provide existing potentials to speed up convergence. 
+
+A new solver relying on Binary Space Partitioning (BSP) trees has been added to compute sparse transport plans between discrete measures in loglinear time. 
+
+
+The release also includes  Additionally, the `sliced_wasserstein_distance` and `max_sliced_wasserstein_distance` functions now accept an optional `scaler` parameter. a new `ot.utils.DataScaler` class for backend-aware joint normalization of input distributions, with sklearn-compatible `fit`/`transform`/`fit_transform` API and support for `'standard'`, `'minmax'`, and `'l2'` methods. The `ot.utils.apply_scaler` helper has also been added to dispatch preprocessing to a scaler object, a callable, or a no-op.
+
+
+
+The release also includes several bug fixes and performance improvements, as well as updates to the documentation and examples.
 
 #### New features 
 
-- Fix reference number error introduced in PR #767 (PR #819)
 - Refactor lazy EMD network simplex storage to avoid dense per-arc cost,
   endpoint, flow, and state storage where possible, and return sparse lazy
   transport plans instead of materializing dense plans internally (PR #813)
@@ -57,6 +65,7 @@ This new release adds support for sparse cost matrices and a new lazy exact OT s
 - Fix entropic regularization in `gcg`(PR #817, Issue #758)
 - Fix documentation build on master with submodules (PR #818)
 - Fix failing test for unbalanced solver with generic regularization (PR #824)
+- Fix reference number error introduced in PR #767 (PR #819)
 
 
 ## 0.9.6.post1
