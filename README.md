@@ -96,7 +96,7 @@ using the following references from the current version and from our [JMLR
 paper](https://jmlr.org/papers/v22/20-451.html):
 
 ```
-Flamary R., Vincent-Cuaz C., Courty N., Gramfort A., Kachaiev O., Quang Tran H., David L., Bonet C., Cassereau N., Gnassounou T., Tanguy E., Delon J., Collas A., Mazelet S., Chapel L., Kerdoncuff T., Yu X., Feickert M., Krzakala P., Liu T., Fernandes Montesuma E. POT Python Optimal Transport (version 0.9.5). URL: https://github.com/PythonOT/POT
+Flamary, R., Vincent-Cuaz, C., Courty, N., Gramfort, A., Kachaiev, O., Quang Tran, H., David, L., Bonet, C., Cassereau, N., Gnassounou, T., Tanguy, E., Delon, J., Collas, A., Mazelet, S., Chapel, L., Kerdoncuff, T., Yu, X., Feickert, M., Krzakala, P., Liu, T., Fernandes Montesuma, E., Neike, N., Genest, B., Coeurjolly, D., & Corneli, M. POT Python Optimal Transport (Version 0.9.7) [Computer software]. https://github.com/PythonOT/POT
 
 Rémi Flamary, Nicolas Courty, Alexandre Gramfort, Mokhtar Z. Alaya, Aurélie Boisbunon, Stanislas Chambon, Laetitia Chapel, Adrien Corenflos, Kilian Fatras, Nemo Fournier, Léo Gautheron, Nathalie T.H. Gayraud, Hicham Janati, Alain Rakotomamonjy, Ievgen Redko, Antoine Rolet, Antony Schutz, Vivien Seguy, Danica J. Sutherland, Romain Tavenard, Alexander Tong, Titouan Vayer, POT Python Optimal Transport library, Journal of Machine Learning Research, 22(78):1−8, 2021. URL: https://pythonot.github.io/
 ```
@@ -104,12 +104,7 @@ Rémi Flamary, Nicolas Courty, Alexandre Gramfort, Mokhtar Z. Alaya, Aurélie Bo
 In Bibtex format:
 
 ```bibtex
-@misc{flamary2024pot,
-  author = {Flamary, R{\'e}mi and Vincent-Cuaz, C{\'e}dric and Courty, Nicolas and Gramfort, Alexandre and Kachaiev, Oleksii and Quang Tran, Huy and David, Laurène and Bonet, Cl{\'e}ment and Cassereau, Nathan and Gnassounou, Th{\'e}o and Tanguy, Eloi and Delon, Julie and Collas, Antoine and Mazelet, Sonia and Chapel, Laetitia and Kerdoncuff, Tanguy and Yu, Xizheng and Feickert, Matthew and Krzakala, Paul and Liu, Tianlin and Fernandes Montesuma, Eduardo},
-  title = {POT Python Optimal Transport (version 0.9.5)},
-  url = {https://github.com/PythonOT/POT},
-  year = {2024}
-}
+@software{flamary2026pot,author = {Flamary, Rémi and Vincent-Cuaz, Cédric and Courty, Nicolas and Gramfort, Alexandre and Kachaiev, Oleksii and Quang Tran, Huy and David, Laurène and Bonet, Clément and Cassereau, Nathan and Gnassounou, Théo and Tanguy, Eloi and Delon, Julie and Collas, Antoine and Mazelet, Sonia and Chapel, Laetitia and Kerdoncuff, Tanguy and Yu, Xizheng and Feickert, Matthew and Krzakala, Paul and Liu, Tianlin and Fernandes Montesuma, Eduardo and Neike, Nathan and Genest, Baptiste and Coeurjolly, David and Corneli, Marco},license = {MIT},title = {{POT Python Optimal Transport}},url = {https://github.com/PythonOT/POT},version = {0.9.7}}
 
 @article{flamary2021pot,
   author  = {R{\'e}mi Flamary and Nicolas Courty and Alexandre Gramfort and Mokhtar Z. Alaya and Aur{\'e}lie Boisbunon and Stanislas Chambon and Laetitia Chapel and Adrien Corenflos and Kilian Fatras and Nemo Fournier and L{\'e}o Gautheron and Nathalie T.H. Gayraud and Hicham Janati and Alain Rakotomamonjy and Ievgen Redko and Antoine Rolet and Antony Schutz and Vivien Seguy and Danica J. Sutherland and Romain Tavenard and Alexander Tong and Titouan Vayer},
@@ -467,4 +462,4 @@ Artificial Intelligence.
 
 [88] Bouveyron, C. & Corneli, M. (2026).  [Scaling optimal transport to high-dimensional Gaussian distributions with application to domain adaptation](https://hal.science/hal-04930868v4/file/Article-OT-HDGauss-v4.pdf). Statistics and Computing 36.2 (2026): 88.
 
-[89] Tipping, M.E. & Bishop, C.M. (1999). [Probabilistic principal component analysis]. Journal of the Royal Statistical Society Series B: Statistical Methodology 61.3 (1999): 611-622.
+[89] Tipping, M.E. & Bishop, C.M. (1999). [Probabilistic principal component analysis](https://www.cs.columbia.edu/~blei/seminar/2020-representation/readings/TippingBishop1999.pdf). Journal of the Royal Statistical Society Series B: Statistical Methodology 61.3 (1999): 611-622.

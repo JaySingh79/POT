@@ -4,14 +4,14 @@
 
 This new release adds support for sparse cost matrices and a new lazy exact OT solver that re-computes distances on-the-fly from coordinates, reducing memory usage from O(n×m) to O(n+m). Both implementations are backend-agnostic and preserve gradient computation for automatic differentiation. Another major feature is the addition of a warmstart feature for the EMD solver, allowing users to provide existing potentials to speed up convergence. 
 
-A new solver relying on Binary Space Partitioning (BSP) trees has been added to compute sparse transport plans between discrete measures in loglinear time. 
+A new solver relying on Binary Space Partitioning (BSP) trees has been added to compute sparse transport plans between discrete measures in loglinear time which allows for very large problems to be solved. The release also includes a new `ot.unbalanced.uot_1d` module with a Frank-Wolfe solver for unbalanced optimal transport in 1D, as well as sliced unbalanced OT solvers in `ot.unbalanced._sliced.py`. Finally we now have a sliced OT plan solver that can be used to compute sliced transport plans (min-pivot sliced and expected sliced) between two measures. 
+
+A novel Spectral-Grassmann Wasserstein metric for operator representations of dynamical systems has been implemented in `ot.sgot`, along with a batch FUGW loss in `ot.batch`. A new wrapper for barycenter solvers with free support has been added in `ot.solvers.bary_free_support`.
 
 
-The release also includes  Additionally, the `sliced_wasserstein_distance` and `max_sliced_wasserstein_distance` functions now accept an optional `scaler` parameter. a new `ot.utils.DataScaler` class for backend-aware joint normalization of input distributions, with sklearn-compatible `fit`/`transform`/`fit_transform` API and support for `'standard'`, `'minmax'`, and `'l2'` methods. The `ot.utils.apply_scaler` helper has also been added to dispatch preprocessing to a scaler object, a callable, or a no-op.
+The release also includes tools for data normalization and scaling which can not be used in sliced Wasserstein distance computations, as well as a numerically stable log-domain solver for entropic partial Wasserstein problems.
 
-
-
-The release also includes several bug fixes and performance improvements, as well as updates to the documentation and examples.
+The release finally includes several bug fixes and performance improvements, as well as updates to the documentation and examples and tests.
 
 #### New features 
 
