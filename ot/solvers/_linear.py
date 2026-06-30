@@ -791,17 +791,9 @@ def solve_sample(
         # automatic solver
         res = ot.solve_sample(xa, xb, a, b, reg=1.0, method='geomloss')
 
-        # force O(n) memory efficient solver
-        res = ot.solve_sample(xa, xb, a, b, reg=1.0, method='geomloss_online')
-
-        # force pre-computed cost matrix
-        res = ot.solve_sample(xa, xb, a, b, reg=1.0, method='geomloss_tensorized')
-
-        # use multiscale solver
-        res = ot.solve_sample(xa, xb, a, b, reg=1.0, method='geomloss_multiscale')
-
-        # One can play with speed (small scaling factor) and precision (scaling close to 1)
-        res = ot.solve_sample(xa, xb, a, b, reg=1.0, method='geomloss', scaling=0.5)
+    .. warning::
+        The geomloss solver is a thin wrapper around the `geomloss.ot.solve_sample`
+        function. The API is still under development and some features might be missing. Please refer to the `geomloss` documentation for more information.
 
     - **Quadratic regularized OT [17]** (when ``reg!=None`` and ``reg_type="L2"``):
 
