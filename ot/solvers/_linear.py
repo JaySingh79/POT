@@ -619,6 +619,7 @@ def solve_sample(
     verbose=False,
     grad="autodiff",
     random_state=None,
+    debiased=False,
 ):
     r"""Solve the discrete optimal transport problem using the samples in the source and target domains.
 
@@ -679,7 +680,14 @@ def solve_sample(
     method : str, optional
         Method for solving the problem, this can be used to select the solver
         for unbalanced problems (see :any:`ot.solve`), or to select a specific
-        large scale solver.
+        large scale solver. Available methods are:
+        - "1d" for 1D OT solver done in parallel for each dimension.
+        - "gaussian" for Gaussian OT solver that estimates mean and
+              covariance and solve the closed form solution)
+        - "lowrank" for low-rank Sinkhorn solver (see :any:`ot.lowrank`)
+        - "nystroem" for Nystroem Sinkhorn solver
+        - "factored" for factored OT solver
+        - "geomloss" for GeomLoss Sinkhorn solver
     n_threads : int, optional
         Number of OMP threads for exact OT solver, by default 1
     max_iter : int, optional
@@ -706,6 +714,13 @@ def solve_sample(
         detached. This is useful for memory saving when only the value is needed.
     random_state : int, optional
         The random state for sampling the components in each distribution for method='nystroem'.
+    debiased : bool, optional
+        Whether to use the debiased version of the OT problem, by default False
+        if True, the value returned is the Sinkhorn divergence but the plan is
+        still the Sinkhorn plan. The results for all pairs of problems and
+        provided in the log dictionary. if debiased='split', then X_a and X_b
+        are split into two halves and the debiased value is computed using the
+        two halves as proposed in minibtach OT.
 
     Returns
     -------
@@ -959,6 +974,64 @@ def solve_sample(
 
 
     """
+
+    if debiased:
+        dict_params = dict(
+            metric=metric,
+            reg=reg,
+            c=c,
+            reg_type=reg_type,
+            unbalanced=unbalanced,
+            unbalanced_type=unbalanced_type,
+            lazy=lazy,
+            batch_size=batch_size,
+            method=method,
+            n_threads=n_threads,
+            max_iter=max_iter,
+            plan_init=plan_init,
+            rank=rank,
+            scaling=scaling,
+            potentials_init=potentials_init,
+            X_init=X_init,
+            tol=tol,
+            verbose=verbose,
+            grad=grad,
+            random_state=random_state,
+            debiased=False,
+        )
+
+        if isinstance(debiased, str) and debiased.lower() == "split":
+            raise NotImplementedError(
+                "Debiased OT with split is not implemented yet. Please use debiased=True for now."
+            )
+        else:
+            # standard debiasing à la sinkhorn divergence
+
+            res11 = solve_sample(X_a, X_a, a=a, b=a, **dict_params)
+
+            res22 = solve_sample(X_b, X_b, a=b, b=b, **dict_params)
+
+            res12 = solve_sample(X_a, X_b, a=a, b=b, **dict_params)
+            value = res12.value - 0.5 * (res11.value + res22.value)
+            value_linear = res12.value_linear - 0.5 * (
+                res11.value_linear + res22.value_linear
+            )
+
+            log = {"res11": res11, "res22": res22, "res12": res12}
+
+            res = OTResult(
+                value=value,
+                value_linear=value_linear,
+                plan=res12.plan,
+                potentials=res12.potentials,
+                sparse_plan=res12.sparse_plan,
+                lazy_plan=res12.lazy_plan,
+                status=res12.status,
+                log=log,
+                backend=res12.backend,
+            )
+        # return debiased result
+        return res
 
     if method is not None and method.lower() in lst_method_lazy:
         lazy0 = lazy
