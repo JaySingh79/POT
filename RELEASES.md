@@ -40,6 +40,7 @@ This new release adds support for sparse cost matrices and a new lazy exact OT s
 - Reorganize all tests per backend (PR #828)
 - Implement debiased OT solvers in `ot.solve_sample`.
 
+
 #### Closed issues
 
 - Mitigate NaN regime of `entropic_partial_wasserstein` at small `reg` via a new log-domain solver, reachable with `entropic_partial_wasserstein(..., method='sinkhorn_log')` (Issue #723; the default `method='sinkhorn'` path is unchanged — callers opt into the log-domain variant)
@@ -60,7 +61,7 @@ This new release adds support for sparse cost matrices and a new lazy exact OT s
 - Fix documentation build on master with submodules (PR #818)
 - Fix failing test for unbalanced solver with generic regularization (PR #824)
 - Fix docstrings for `lowrank_gromov_wasserstein_samples` and `lowrank_sinkhorn` (PR #823)   
-
+- Update sgot cost function and example (PR #830)
 
 ## 0.9.6.post1
 
