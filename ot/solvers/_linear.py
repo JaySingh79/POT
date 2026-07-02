@@ -463,6 +463,13 @@ def solve(
                 if reg_type.lower() == "entropy":
                     value = value_linear + reg * nx.sum(plan * nx.log(plan + 1e-16))
                 else:
+                    # stabilize kl of 0 mass
+                    if nx.any(a == 0) or nx.any(b == 0):
+                        a = a + 1e-16 * nx.min(a)
+                        b = b + 1e-16 * nx.min(b)
+                        print(
+                            "Warning: a or b has 0 mass, adding small mass to avoid NaN in KL divergence."
+                        )
                     value = value_linear + reg * nx.kl_div(
                         plan, a[:, None] * b[None, :]
                     )
@@ -1009,6 +1016,11 @@ def solve_sample(
 
         nx = get_backend(X_a, X_b, a, b)
 
+        if nx.__name__ == "tf":
+            raise NotImplementedError(
+                "Debiasing is not implemented for TensorFlow backend."
+            )
+
         if isinstance(debias, str) and debias.lower() == "split":
             # split the samples into two halves with each half the mass
             X_a1, X_a2, a1, a2, sel_a1, sel_a2 = split_samples_ratio(X_a, a, nx)
@@ -1415,9 +1427,22 @@ def split_samples_ratio(X_a, a, nx, ratio=0.5):
     v_idx = a[idx_a]
     a1_1 = nx.maximum(v_idx * nx.detach((thr_a - nx.sum(a01)) / v_idx), 0)
     a2_0 = nx.maximum(v_idx * nx.detach((nx.sum(a) - thr_a - nx.sum(a02)) / v_idx), 0)
-    a1 = nx.concatenate([a01, nx.reshape(a1_1, (1,))])
-    a2 = nx.concatenate([nx.reshape(a2_0, (1,)), a02])
-    sel_a1 = slice(0, idx_a + 1)
+    # concat mass or remove samples if mass is 0
+    if a1_1 > 0:
+        a1 = nx.concatenate([a01, nx.reshape(a1_1, (1,))])
+        sel_a1 = slice(0, idx_a + 1)
+    else:
+        X_a1 = X_a[:idx_a]
+        sel_a1 = slice(0, idx_a)
+        a1 = a01
+
+    if a2_0 > 0:
+        a2 = nx.concatenate([nx.reshape(a2_0, (1,)), a02])
+        sel_a2 = slice(idx_a, n_a)
+    else:
+        X_a2 = X_a[idx_a + 1 :]
+        sel_a2 = slice(idx_a + 1, n_a)
+        a2 = a02
     sel_a2 = slice(idx_a, n_a)
 
     return X_a1, X_a2, a1, a2, sel_a1, sel_a2

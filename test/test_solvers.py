@@ -797,6 +797,7 @@ def test_solve_sample_methods(nx, method_params):
         np.testing.assert_allclose(sol2.value, 0, atol=1e-10)
 
 
+@pytest.skip_backend("tf", reason="Not implemented for tf backend")
 @pytest.mark.parametrize("debias", [True, False, "split"])
 def test_solve_sample_debias(nx, debias):
     n_samples_s = 10
