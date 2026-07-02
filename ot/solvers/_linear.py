@@ -619,7 +619,7 @@ def solve_sample(
     verbose=False,
     grad="autodiff",
     random_state=None,
-    debiased=False,
+    debias=False,
 ):
     r"""Solve the discrete optimal transport problem using the samples in the source and target domains.
 
@@ -714,7 +714,7 @@ def solve_sample(
         detached. This is useful for memory saving when only the value is needed.
     random_state : int, optional
         The random state for sampling the components in each distribution for method='nystroem'.
-    debiased : bool, optional
+    debias : bool, optional
         Whether to use the debiased version of the OT problem, by default False
         if True, the value returned is the Sinkhorn divergence but the plan is
         still the Sinkhorn plan. The results for all pairs of problems and
@@ -975,7 +975,7 @@ def solve_sample(
 
     """
 
-    if debiased:
+    if debias:
         dict_params = dict(
             metric=metric,
             reg=reg,
@@ -997,39 +997,106 @@ def solve_sample(
             verbose=verbose,
             grad=grad,
             random_state=random_state,
-            debiased=False,
+            debias=False,
         )
 
-        if isinstance(debiased, str) and debiased.lower() == "split":
-            raise NotImplementedError(
-                "Debiased OT with split is not implemented yet. Please use debiased=True for now."
+        nx = get_backend(X_a, X_b, a, b)
+
+        if isinstance(debias, str) and debias.lower() == "split":
+            # split the samples into two halves with each half the mass
+
+            n_a = X_a.shape[0]
+            n_b = X_b.shape[0]
+
+            if a is None:
+                a = nx.ones(n_a, type_as=X_a) / n_a
+            if b is None:
+                b = nx.ones(n_b, type_as=X_b) / n_b
+
+            # find the split indices
+            acs = nx.cumsum(a)
+            bcs = nx.cumsum(b)
+
+            thr_a = 0.5 * nx.sum(a)
+            thr_b = 0.5 * nx.sum(b)
+
+            idx_a = nx.searchsorted(acs, thr_a)
+            idx_b = nx.searchsorted(bcs, thr_b)
+
+            # split the samples and weights
+            X_a1, X_a2 = X_a[: idx_a + 1], X_a[idx_a:]
+            X_b1, X_b2 = X_b[: idx_b + 1], X_b[idx_b:]
+
+            # compute weights for each half and adjust the last/first weight to sum to 0.5
+            a1, a2 = a[: idx_a + 1], a[idx_a:]
+            a1[-1] = a1[-1] * nx.detach((thr_a - nx.sum(a1[:-1])) / a1[-1])
+            a2[0] = a2[0] * nx.detach((thr_a - nx.sum(a2[1:])) / a2[0])
+            b1, b2 = b[: idx_b + 1], b[idx_b:]
+            b1[-1] = b1[-1] * nx.detach((thr_b - nx.sum(b1[:-1])) / b1[-1])
+            b2[0] = b2[0] * nx.detach((thr_b - nx.sum(b2[1:])) / b2[0])
+
+            # compute the four OT problems
+            resaa = solve_sample(X_a1, X_a2, a=a1, b=a2, **dict_params)
+            resbb = solve_sample(X_b1, X_b2, a=b1, b=b2, **dict_params)
+            resab1 = solve_sample(X_a1, X_b1, a=a1, b=b1, **dict_params)
+            resab2 = solve_sample(X_a2, X_b2, a=a2, b=b2, **dict_params)
+
+            # compute debiased values
+            value = 0.5 * (resab1.value + resab2.value) - 0.5 * (
+                resaa.value + resbb.value
             )
-        else:
-            # standard debiasing à la sinkhorn divergence
-
-            res11 = solve_sample(X_a, X_a, a=a, b=a, **dict_params)
-
-            res22 = solve_sample(X_b, X_b, a=b, b=b, **dict_params)
-
-            res12 = solve_sample(X_a, X_b, a=a, b=b, **dict_params)
-            value = res12.value - 0.5 * (res11.value + res22.value)
-            value_linear = res12.value_linear - 0.5 * (
-                res11.value_linear + res22.value_linear
+            value_linear = 0.5 * (resab1.value_linear + resab2.value_linear) - 0.5 * (
+                resaa.value_linear + resbb.value_linear
             )
 
-            log = {"res11": res11, "res22": res22, "res12": res12}
+            log = {
+                "res_aa": resaa,
+                "res_bb": resbb,
+                "res_ab1": resab1,
+                "res_ab2": resab2,
+            }
 
             res = OTResult(
                 value=value,
                 value_linear=value_linear,
-                plan=res12.plan,
-                potentials=res12.potentials,
-                sparse_plan=res12.sparse_plan,
-                lazy_plan=res12.lazy_plan,
-                status=res12.status,
+                plan=None,  # no plan for debiased version
+                potentials=None,  # no potentials for debiased version
+                sparse_plan=None,  # no sparse plan for debiased version
+                lazy_plan=None,  # no lazy plan for debiased version
+                status="Debiased",
                 log=log,
-                backend=res12.backend,
+                backend=nx,
             )
+
+        else:
+            # standard debiasing à la sinkhorn divergence
+
+            resaa = solve_sample(X_a, X_a, a=a, b=a, **dict_params)
+
+            resbb = solve_sample(X_b, X_b, a=b, b=b, **dict_params)
+
+            resab = solve_sample(X_a, X_b, a=a, b=b, **dict_params)
+
+            # compute debiased values
+            value = resab.value - 0.5 * (resaa.value + resbb.value)
+            value_linear = resab.value_linear - 0.5 * (
+                resaa.value_linear + resbb.value_linear
+            )
+
+            log = {"res_aa": resaa, "res_bb": resbb, "res_ab": resab}
+
+            res = OTResult(
+                value=value,
+                value_linear=value_linear,
+                plan=resab.plan,
+                potentials=resab.potentials,
+                sparse_plan=resab.sparse_plan,
+                lazy_plan=resab.lazy_plan,
+                status=resab.status,
+                log=log,
+                backend=nx,
+            )
+
         # return debiased result
         return res
 

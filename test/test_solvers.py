@@ -797,6 +797,31 @@ def test_solve_sample_methods(nx, method_params):
         np.testing.assert_allclose(sol2.value, 0, atol=1e-10)
 
 
+@pytest.mark.parametrize("debias", [True, False, "split"])
+def test_solve_sample_debias(nx, debias):
+    n_samples_s = 10
+    n_samples_t = 9
+    n_features = 2
+    rng = np.random.RandomState(42)
+
+    x = rng.randn(n_samples_s, n_features)
+    y = rng.randn(n_samples_t, n_features)
+    a = ot.utils.unif(n_samples_s)
+    b = ot.utils.unif(n_samples_t)
+
+    xb, yb, ab, bb = nx.from_numpy(x, y, a, b)
+
+    sol = ot.solve_sample(x, y, reg=10, debias=debias)
+    solb = ot.solve_sample(xb, yb, ab, bb, reg=10, debias=debias)
+
+    # check some attributes (no need )
+    assert_allclose_sol(sol, solb)
+
+    sol2 = ot.solve_sample(x, x, reg=10, debias=True)
+
+    np.testing.assert_allclose(sol2.value, 0, atol=1e-10)
+
+
 @pytest.mark.parametrize("method_params", lst_parameters_solve_sample_NotImplemented)
 def test_solve_sample_NotImplemented(nx, method_params):
     n_samples_s = 20
