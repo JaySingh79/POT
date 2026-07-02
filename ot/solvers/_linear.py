@@ -716,11 +716,11 @@ def solve_sample(
         The random state for sampling the components in each distribution for method='nystroem'.
     debias : bool, optional
         Whether to use the debiased version of the OT problem, by default False
-        if True, the value returned is the Sinkhorn divergence but the plan is
+        if True, the value returned is the Sinkhorn divergence [23] but the plan is
         still the Sinkhorn plan. The results for all pairs of problems and
         provided in the log dictionary. if debiased='split', then X_a and X_b
         are split into two halves and the debiased value is computed using the
-        two halves as proposed in minibtach OT.
+        two halves as proposed in minibatch OT [91].
 
     Returns
     -------
@@ -951,6 +951,10 @@ def solve_sample(
         Optimal Transport. Proceedings of the Twenty-First International
         Conference on Artificial Intelligence and Statistics (AISTATS).
 
+    ..[23] Aude, G., Peyré, G., Cuturi, M., Learning Generative Models with
+        Sinkhorn Divergences, Proceedings of the Twenty-First International
+        Conference on Artificial Intelligence and Statistics, (AISTATS) 21, 2018
+
     .. [34] Feydy, J., Séjourné, T., Vialard, F. X., Amari, S. I., Trouvé,
         A., & Peyré, G. (2019, April). Interpolating between optimal transport
         and MMD using Sinkhorn divergences. In The 22nd International Conference
@@ -972,6 +976,9 @@ def solve_sample(
     .. [80] Altschuler, J., Bach, F., Rudi, A., Niles-Weed, J. (2019).
         Massively scalable Sinkhorn distances via the Nyström method. NeurIPS.
 
+    .. [91] Fatras, K., Zine, Y., Majewski, S., Flamary, R., Gribonval, R., &
+        Courty, N. (2021). [Minibatch optimal transport distances; analysis and
+        applications](https://arxiv.org/pdf/2101.01792). arXiv preprint arXiv:2101.01792.
 
     """
 
