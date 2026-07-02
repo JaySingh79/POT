@@ -1011,41 +1011,8 @@ def solve_sample(
 
         if isinstance(debias, str) and debias.lower() == "split":
             # split the samples into two halves with each half the mass
-
-            n_a = X_a.shape[0]
-            n_b = X_b.shape[0]
-
-            if a is None:
-                a = nx.ones(n_a, type_as=X_a) / n_a
-            if b is None:
-                b = nx.ones(n_b, type_as=X_b) / n_b
-
-            # find the split indices
-            acs = nx.cumsum(a)
-            bcs = nx.cumsum(b)
-
-            thr_a = 0.5 * nx.sum(a)
-            thr_b = 0.5 * nx.sum(b)
-
-            idx_a = nx.searchsorted(acs, thr_a)
-            idx_b = nx.searchsorted(bcs, thr_b)
-
-            # split the samples and weights
-            X_a1, X_a2 = X_a[: idx_a + 1], X_a[idx_a:]
-            X_b1, X_b2 = X_b[: idx_b + 1], X_b[idx_b:]
-
-            # compute weights for each half and adjust the last/first weight to sum to 0.5
-            a1, a2 = a[: idx_a + 1], a[idx_a:]
-            a1_1 = a1[idx_a] * nx.detach((thr_a - nx.sum(a1[:idx_a])) / a1[idx_a])
-            a2_0 = a2[0] * nx.detach((thr_a - nx.sum(a2[1:])) / a2[0])
-            a1 = nx.concatenate([a1[:idx_a], nx.reshape(a1_1, (1,))])
-            a2 = nx.concatenate([nx.reshape(a2_0, (1,)), a2[1:]])
-
-            b1, b2 = b[: idx_b + 1], b[idx_b:]
-            b1_1 = b1[idx_b] * nx.detach((thr_b - nx.sum(b1[:idx_b])) / b1[idx_b])
-            b2_0 = b2[0] * nx.detach((thr_b - nx.sum(b2[1:])) / b2[0])
-            b1 = nx.concatenate([b1[:idx_b], nx.reshape(b1_1, (1,))])
-            b2 = nx.concatenate([nx.reshape(b2_0, (1,)), b2[1:]])
+            X_a1, X_a2, a1, a2, sel_a1, sel_a2 = split_samples_ratio(X_a, a, nx)
+            X_b1, X_b2, b1, b2, sel_b1, sel_b2 = split_samples_ratio(X_b, b, nx)
 
             # compute the four OT problems
             resaa = solve_sample(X_a1, X_a2, a=a1, b=a2, **dict_params)
@@ -1066,6 +1033,14 @@ def solve_sample(
                 "res_bb": resbb,
                 "res_ab1": resab1,
                 "res_ab2": resab2,
+                "sel_a1": sel_a1,
+                "sel_a2": sel_a2,
+                "sel_b1": sel_b1,
+                "sel_b2": sel_b2,
+                "a1": a1,
+                "a2": a2,
+                "b1": b1,
+                "b2": b2,
             }
 
             res = OTResult(
@@ -1415,3 +1390,34 @@ def solve_sample(
             log=log,
         )
         return res
+
+
+def split_samples_ratio(X_a, a, nx, ratio=0.5):
+    "returns a split of the samples and weights according to a ratio"
+
+    n_a = X_a.shape[0]
+
+    if a is None:
+        a = nx.ones(n_a, type_as=X_a) / n_a
+
+        # find the split indices
+    acs = nx.cumsum(a)
+
+    thr_a = ratio * nx.sum(a)
+
+    idx_a = nx.searchsorted(acs, thr_a, side="right")
+
+    # split the samples and weights
+    X_a1, X_a2 = X_a[: idx_a + 1], X_a[idx_a:]
+
+    # compute weights for each half and adjust the last/first weight to sum to 0.5
+    a01, a02 = a[:idx_a], a[idx_a + 1 :]
+    v_idx = a[idx_a]
+    a1_1 = nx.maximum(v_idx * nx.detach((thr_a - nx.sum(a01)) / v_idx), 0)
+    a2_0 = nx.maximum(v_idx * nx.detach((nx.sum(a) - thr_a - nx.sum(a02)) / v_idx), 0)
+    a1 = nx.concatenate([a01, nx.reshape(a1_1, (1,))])
+    a2 = nx.concatenate([nx.reshape(a2_0, (1,)), a02])
+    sel_a1 = slice(0, idx_a + 1)
+    sel_a2 = slice(idx_a, n_a)
+
+    return X_a1, X_a2, a1, a2, sel_a1, sel_a2
