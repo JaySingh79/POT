@@ -1036,11 +1036,16 @@ def solve_sample(
 
             # compute weights for each half and adjust the last/first weight to sum to 0.5
             a1, a2 = a[: idx_a + 1], a[idx_a:]
-            a1[-1] = a1[-1] * nx.detach((thr_a - nx.sum(a1[:-1])) / a1[-1])
-            a2[0] = a2[0] * nx.detach((thr_a - nx.sum(a2[1:])) / a2[0])
+            a1_1 = a1[idx_a] * nx.detach((thr_a - nx.sum(a1[:idx_a])) / a1[-1])
+            a2_0 = a2[0] * nx.detach((thr_a - nx.sum(a2[1:])) / a2[0])
+            a1 = nx.concatenate([a1[:idx_a], nx.reshape(a1_1, (1,))])
+            a2 = nx.concatenate([nx.reshape(a2_0, (1,)), a2[1:]])
+
             b1, b2 = b[: idx_b + 1], b[idx_b:]
-            b1[-1] = b1[-1] * nx.detach((thr_b - nx.sum(b1[:-1])) / b1[-1])
-            b2[0] = b2[0] * nx.detach((thr_b - nx.sum(b2[1:])) / b2[0])
+            b1_1 = b1[idx_b] * nx.detach((thr_b - nx.sum(b1[:idx_b])) / b1[-1])
+            b2_0 = b2[0] * nx.detach((thr_b - nx.sum(b2[1:])) / b2[0])
+            b1 = nx.concatenate([b1[:idx_b], nx.reshape(b1_1, (1,))])
+            b2 = nx.concatenate([nx.reshape(b2_0, (1,)), b2[1:]])
 
             # compute the four OT problems
             resaa = solve_sample(X_a1, X_a2, a=a1, b=a2, **dict_params)
