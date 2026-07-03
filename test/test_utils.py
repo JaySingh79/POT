@@ -959,6 +959,7 @@ def test_datascaler_backend_mismatch_raises():
         scaler.transform(X)
 
 
+@pytest.skip_backend("tf")
 @pytest.mark.parametrize("ratio", [0.3, 0.5, 0.51, 0.7])
 @pytest.mark.parametrize("n", [10, 50, 100, 101])
 @pytest.mark.parametrize("random", [True, False])

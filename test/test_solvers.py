@@ -32,6 +32,7 @@ lst_method_params_solve_sample = [
     {"method": "1d", "metric": "euclidean"},
     {"method": "gaussian"},
     {"method": "gaussian", "reg": 1},
+    {"method": "gaussian_hd", "rank": 1},
     {"method": "factored", "rank": 2},
     {"method": "lowrank", "rank": 2, "max_iter": 5},
     {"method": "nystroem", "rank": 2},

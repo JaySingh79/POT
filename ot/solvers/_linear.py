@@ -21,7 +21,10 @@ from ..bregman import (
 from ..sliced import sliced_wasserstein_distance, max_sliced_wasserstein_distance
 from ..bsp import compute_bspot_bijection
 from ..smooth import smooth_ot_dual
-from ..gaussian import empirical_bures_wasserstein_distance
+from ..gaussian import (
+    empirical_bures_wasserstein_distance,
+    empirical_bures_wasserstein_distance_hd,
+)
 from ..factored import factored_optimal_transport
 from ..lowrank import lowrank_sinkhorn
 from ..optim import cg
@@ -38,6 +41,7 @@ lst_valid_methods_solve = [
 lst_method_solve_sample = [
     "1d",
     "gaussian",
+    "gaussian_hd",
     "lowrank",
     "nystroem",
     "factored",
@@ -715,6 +719,7 @@ def solve_sample(
         - "1d" for 1D OT solver done in parallel for each dimension.
         - "gaussian" for Gaussian OT solver that estimates mean and
               covariance and solve the closed form solution)
+        - "gaussian_hd" for high-dimensional Gaussian OT solver with rank given by `rank` parameter .
         - "lowrank" for low-rank Sinkhorn solver (see :any:`ot.lowrank`)
         - "nystroem" for Nystroem Sinkhorn solver
         - "factored" for factored OT solver
@@ -952,7 +957,7 @@ def solve_sample(
 
     Corresponds to a low rank approximation of entropic OT (for a squared Euclidean cost) that runs in linear time.
 
-    - **Gaussian Bures-Wasserstein [2]** (when ``method='gaussian'``):
+    - **Gaussian Bures-Wasserstein** (when ``method='gaussian'``):
 
     This method computes the Gaussian Bures-Wasserstein distance between two
     Gaussian distributions estimated from the empirical distributions
@@ -973,6 +978,14 @@ def solve_sample(
 
         # recover the squared Gaussian Bures-Wasserstein distance
         BW_dist = res.value
+
+    The Gaussian-HD variant of this method can be used for high-dimensional data with the following code:
+
+    .. code-block:: python
+
+        res = ot.solve_sample(xa, xb, method='gaussian_hd', rank=10)
+
+    where the rank parameter controls the rank of the covariance matrices used in the computation of the Bures-Wasserstein distance.
 
     - **Wasserstein 1d [1]** (when ``method='1D'``):
 
@@ -1368,8 +1381,39 @@ def solve_sample(
             if reg is None:
                 reg = 1e-6
 
+            if len(a.shape) == 1:
+                a = a.reshape(-1, 1)
+            if len(b.shape) == 1:
+                b = b.reshape(-1, 1)
+
             value, log = empirical_bures_wasserstein_distance(
-                X_a, X_b, reg=reg, log=True
+                X_a, X_b, reg=reg, ws=a, wt=b, log=True
+            )
+            value = value**2  # return the value (squared bures distance)
+            value_linear = value  # return the value
+
+        elif method == "gaussian_hd":  # Gaussian BW for high-dimensional data
+            if metric.lower() not in ["sqeuclidean"]:
+                raise (
+                    NotImplementedError('Not implemented metric="{}"'.format(metric))
+                )
+
+            if reg is None:
+                reg = 1e-5
+
+            if len(a.shape) == 1:
+                a = a.reshape(-1, 1)
+            if len(b.shape) == 1:
+                b = b.reshape(-1, 1)
+
+            if rank > X_a.shape[1] or rank > X_b.shape[1]:
+                warn(
+                    "Rank is larger than the number of features. Using full rank for Gaussian Bures-Wasserstein distance."
+                )
+                rank = min(X_a.shape[1], X_b.shape[1])
+
+            value, log = empirical_bures_wasserstein_distance_hd(
+                X_a, X_b, d_intrinsic=rank, ws=a, wt=b, reg=reg, log=True
             )
             value = value**2  # return the value (squared bures distance)
             value_linear = value  # return the value
