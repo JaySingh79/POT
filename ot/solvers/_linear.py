@@ -30,6 +30,8 @@ from warnings import warn
 lst_valid_methods_solve = [
     "sinkhorn",  # sinkhorn for unbalanced
     "sinkhorn_log",  # sinkhorn for unbalanced
+    "mm",  # unbalanced
+    "lbfgsb",  # unbalanced
 ]
 
 
