@@ -8,7 +8,7 @@ General OT solvers with unified API
 #
 # License: MIT License
 
-from ..utils import OTResult, dist, split_sample_ratio
+from ..utils import OTResult, dist, split_sample_ratio, apply_scaler
 from ..lp import emd2, emd2_lazy, wasserstein_1d
 from ..backend import get_backend
 from ..unbalanced import mm_unbalanced, sinkhorn_knopp_unbalanced, lbfgsb_unbalanced
@@ -18,6 +18,8 @@ from ..bregman import (
     empirical_sinkhorn_nystroem2,
     old_geomloss,
 )
+from ..sliced import sliced_wasserstein_distance, max_sliced_wasserstein_distance
+from ..bsp import compute_bspot_bijection
 from ..smooth import smooth_ot_dual
 from ..gaussian import empirical_bures_wasserstein_distance
 from ..factored import factored_optimal_transport
@@ -25,8 +27,13 @@ from ..lowrank import lowrank_sinkhorn
 from ..optim import cg
 from warnings import warn
 
+lst_valid_methods_solve = [
+    "sinkhorn",  # sinkhorn for unbalanced
+    "sinkhorn_log",  # sinkhorn for unbalanced
+]
 
-lst_method_lazy = [
+
+lst_method_solve_sample = [
     "1d",
     "gaussian",
     "lowrank",
@@ -37,7 +44,12 @@ lst_method_lazy = [
     "geomloss_tensorized",
     "geomloss_online",
     "geomloss_multiscale",
+    "sliced",
+    "max_sliced",
+    "bsp",
 ]
+
+all_valid_methods_solve_sample = lst_valid_methods_solve + lst_method_solve_sample
 
 
 def solve(
@@ -293,6 +305,13 @@ def solve(
 
     if reg is None:
         reg = 0
+
+    if method is not None and method not in lst_valid_methods_solve:
+        raise ValueError(
+            "Unknown method={} for solve, must be in {}".format(
+                method, lst_valid_methods_solve
+            )
+        )
 
     # default values for solutions
     potentials = None
@@ -627,6 +646,9 @@ def solve_sample(
     grad="autodiff",
     random_state=None,
     debias=False,
+    n_projections=50,
+    projections=None,
+    scaler=None,
 ):
     r"""Solve the discrete optimal transport problem using the samples in the source and target domains.
 
@@ -695,6 +717,11 @@ def solve_sample(
         - "nystroem" for Nystroem Sinkhorn solver
         - "factored" for factored OT solver
         - "geomloss" for GeomLoss Sinkhorn solver
+        - "sliced" for sliced wasserstein distance (see :any:`ot.sliced`)
+        - "max_sliced" for max sliced wasserstein distance (see
+          :any:`ot.max_sliced`)
+        - "bsp" for BSP-OT solver (only for distribution with same number of
+          samples and uniform weights)
     n_threads : int, optional
         Number of OMP threads for exact OT solver, by default 1
     max_iter : int, optional
@@ -728,6 +755,12 @@ def solve_sample(
         provided in the log dictionary. if debiased='split', then X_a and X_b
         are split into two halves and the debiased value is computed using the
         two halves as proposed in minibatch OT [91].
+    n_projections : int, optional
+        Number of projections for sliced OT, by default 50
+    projections : array-like, shape (n_projections, dim), optional
+        Projections for sliced OT, by default None (random projections are used)
+    scaler : callable, optional
+        Function to scale the input data, by default None (no scaling)
 
     Returns
     -------
@@ -834,6 +867,22 @@ def solve_sample(
 
         res = ot.solve_sample(xa, xb, a, b, reg=1.0, reg_type='L2')
 
+    - **Debiased OT and Sinkhorn divergence** (when ``debias=True``):
+
+    One can compute the Sinkhorn divergence between two distributions using the
+    following code:
+
+    .. code-block:: python
+
+        div = ot.solve_sample(xa, xb, a, b, reg=1.0, debias=True).value
+
+    Debiasing for all existing solvers is implemented and in particular one can
+    recover the minibatch exact OT debiasing [91] using the following code:
+
+    .. code-block:: python
+
+        div = ot.solve_sample(xa, xb, a, b, debias='split').value
+
     - **Unbalanced OT [41]** (when ``unbalanced!=None``):
 
     .. math::
@@ -936,6 +985,38 @@ def solve_sample(
         # recover the squared Wasserstein distances
         W_dists = res.value
 
+    - **Sliced Wasserstein distance** (when ``method='sliced'``):
+
+    This method computes the sliced Wasserstein distance between two
+    distributions. The sliced Wasserstein distance
+    is defined as the average of the Wasserstein distances between the projected
+    distributions on random directions.
+
+    .. code-block:: python
+
+        swd = ot.solve_sample(xa, xb, method='sliced', n_projections=50).value
+
+    - **Max Sliced Wasserstein [34]** (when ``method='max_sliced'``):
+
+    This method computes the max sliced Wasserstein distance between two
+    distributions.
+
+    .. code-block:: python
+
+        mswd = ot.solve_sample(xa, xb, method='max_sliced', n_projections=50).value
+
+    - **Binary Space Partitioning OT  (BSP)** (when ``method='bsp'``):
+
+    This method computes the BSP-OT distance between two distributions and
+    alignments. The number of partitioning directions can be set with the `n_projections` parameter.
+
+    .. code-block:: python
+
+        res = ot.solve_sample(xa, xb, method='bsp', n_projections=50)
+
+        bsp_ot_distance = res.value
+        bsp_plan = res.plan
+
 
     .. _references-solve-sample:
     References
@@ -988,6 +1069,16 @@ def solve_sample(
         applications](https://arxiv.org/pdf/2101.01792). arXiv preprint arXiv:2101.01792.
 
     """
+
+    if method is not None and method.lower() not in all_valid_methods_solve_sample:
+        raise ValueError(
+            "Unknown method={} for solve_sample. Available methods are: {}".format(
+                method, all_valid_methods_solve_sample
+            )
+        )
+
+    if scaler is not None:
+        X_a, Xb = apply_scaler(X_a, X_b, scaler=scaler)
 
     if debias:
         dict_params = dict(
@@ -1099,7 +1190,7 @@ def solve_sample(
         # return debiased result
         return res
 
-    if method is not None and method.lower() in lst_method_lazy:
+    if method is not None and method.lower() in all_valid_methods_solve_sample:
         lazy0 = lazy
         lazy = True
 
@@ -1128,14 +1219,7 @@ def solve_sample(
 
         return res
 
-    elif (
-        lazy
-        and method is None
-        and (reg is None or reg == 0)
-        and unbalanced is None
-        and X_a is not None
-        and X_b is not None
-    ):
+    elif lazy and method is None and (reg is None or reg == 0) and unbalanced is None:
         # Use lazy EMD solver with coordinates (no regularization, balanced)
         nx = get_backend(X_a, X_b, a, b)
         value_linear, log = emd2_lazy(
@@ -1171,6 +1255,7 @@ def solve_sample(
         value_linear = None
         plan = None
         lazy_plan = None
+        sparse_plan = None
         status = None
         log = None
 
@@ -1188,6 +1273,89 @@ def solve_sample(
 
             value = wasserstein_1d(X_a, X_b, a, b, p=p)
             value_linear = value
+
+        elif method == "sliced":  # Sliced Wasserstein distance
+            if metric == "sqeuclidean":
+                p = 2
+            elif metric in ["euclidean", "cityblock"]:
+                p = 1
+            else:
+                raise (
+                    NotImplementedError('Not implemented metric="{}"'.format(metric))
+                )
+
+            value, log = sliced_wasserstein_distance(
+                X_a,
+                X_b,
+                a=a,
+                b=b,
+                p=p,
+                n_projections=n_projections,
+                projections=projections,
+                seed=random_state,
+                log=True,
+            )
+            value_linear = value
+
+        elif method == "max_sliced":  # Max Sliced Wasserstein distance
+            if metric == "sqeuclidean":
+                p = 2
+            elif metric in ["euclidean", "cityblock"]:
+                p = 1
+            else:
+                raise (
+                    NotImplementedError('Not implemented metric="{}"'.format(metric))
+                )
+
+            value, log = max_sliced_wasserstein_distance(
+                X_a,
+                X_b,
+                a=a,
+                b=b,
+                p=p,
+                n_projections=n_projections,
+                projections=projections,
+                seed=random_state,
+                log=True,
+            )
+            value_linear = value
+
+        elif method == "bsp":  # BSP-OT solver
+            if metric == "sqeuclidean":
+                p = 2
+            elif metric in ["euclidean", "cityblock"]:
+                p = 1
+            else:
+                raise (
+                    NotImplementedError('Not implemented metric="{}"'.format(metric))
+                )
+
+            if (X_a.shape[0] != X_b.shape[0]) or a is not None or b is not None:
+                raise ValueError(
+                    "BSP-OT solver requires the same number of samples in both distributions and uniform weights (provided as None)."
+                )
+
+            if random_state is None:
+                random_state = 0
+
+            n = X_a.shape[0]
+
+            value, perm, perms = compute_bspot_bijection(
+                X_a, X_b, p=p, seed=random_state, n_plans=n_projections
+            )
+            value_linear = value
+            sparse_plan = nx.coo_matrix(
+                nx.ones(n, type_as=X_a) / n,
+                nx.arange(n),
+                perm,
+                shape=(n, n),
+                type_as=X_a,
+            )
+
+            log = {
+                "perm": perm,
+                "perms": perms,
+            }
 
         elif method == "gaussian":  # Gaussian Bures-Wasserstein
             if metric.lower() not in ["sqeuclidean"]:
@@ -1396,6 +1564,7 @@ def solve_sample(
             value=value,
             lazy_plan=lazy_plan,
             value_linear=value_linear,
+            sparse_plan=sparse_plan,
             plan=plan,
             status=status,
             backend=nx,
