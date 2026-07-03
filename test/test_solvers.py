@@ -799,7 +799,8 @@ def test_solve_sample_methods(nx, method_params):
 
 @pytest.skip_backend("tf", reason="Not implemented for tf backend")
 @pytest.mark.parametrize("debias", [True, False, "split"])
-def test_solve_sample_debias(nx, debias):
+@pytest.mark.parametrize("reg", [None, 10])
+def test_solve_sample_debias(nx, debias, reg):
     n_samples_s = 10
     n_samples_t = 9
     n_features = 2
@@ -812,15 +813,11 @@ def test_solve_sample_debias(nx, debias):
 
     xb, yb, ab, bb = nx.from_numpy(x, y, a, b)
 
-    sol = ot.solve_sample(x, y, reg=10, debias=debias)
-    solb = ot.solve_sample(xb, yb, ab, bb, reg=10, debias=debias)
+    sol = ot.solve_sample(x, y, reg=reg, debias=debias)
+    solb = ot.solve_sample(xb, yb, ab, bb, reg=reg, debias=debias)
 
     # check some attributes (no need )
     assert_allclose_sol(sol, solb)
-
-    sol2 = ot.solve_sample(x, x, reg=10, debias=True)
-
-    np.testing.assert_allclose(sol2.value, 0, atol=1e-10)
 
 
 @pytest.mark.parametrize("method_params", lst_parameters_solve_sample_NotImplemented)

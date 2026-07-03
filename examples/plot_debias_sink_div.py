@@ -225,6 +225,7 @@ sep_list = np.linspace(0, 1.0, 10)
 sink_list = []
 sink_div_list = []
 ot_mb_list = []
+ot_mb_rand = []
 ot_mb_sink_list = []
 for sep in sep_list:
     x2sep = sample_two_balls(n, radius=1.0, sep=sep)
@@ -237,6 +238,9 @@ for sep in sep_list:
     )
     sink_div_list.append(ot.solve_sample(x1, x2sep, reg=reg, debias=True).value)
     ot_mb_list.append(ot.solve_sample(x1, x2sep, debias="split").value)
+    ot_mb_rand.append(
+        ot.solve_sample(x1, x2sep, debias="split_random", random_state=41).value
+    )
     ot_mb_sink_list.append(ot.solve_sample(x1, x2sep, reg=1, debias="split").value)
 
 pl.figure(3)
@@ -244,8 +248,11 @@ pl.plot(sep_list, sink_list, label="Sinkhorn loss", color="C0")
 pl.plot(sep_list, sink_div_list, label="Sinkhorn divergence", color="C1")
 pl.plot(sep_list, ot_mb_list, label="Debiased MB OT", color="C2")
 pl.plot(sep_list, ot_mb_sink_list, label="Debiased MB Sinkhorn", color="C3")
+pl.plot(sep_list, ot_mb_rand, label="Debiased MB OT (random)", color="C4")
 pl.xlabel("Separation between distributions")
 pl.ylabel("Loss/Divergence")
 pl.title("Comparison of biased VS debiased OT losses")
 pl.grid()
 pl.legend()
+
+# %%

@@ -2444,7 +2444,6 @@ class TorchBackend(Backend):
             )
             return torch.randperm(
                 n=size,
-                dtype=type_as.dtype,
                 generator=generator,
                 device=type_as.device,
             )
@@ -2909,7 +2908,7 @@ class CupyBackend(Backend):  # pragma: no cover
             return self.rng_.permutation(size)
         else:
             with cp.cuda.Device(type_as.device):
-                return cp.asarray(self.rng_.permutation(size), dtype=type_as.dtype)
+                return cp.asarray(self.rng_.permutation(size))
 
     def coo_matrix(self, data, rows, cols, shape=None, type_as=None):
         data = self.from_numpy(data)
@@ -3360,7 +3359,7 @@ class TensorflowBackend(Backend):
             )
         else:
             return tf.random.experimental.stateless_shuffle(
-                tf.range(size, dtype=type_as.dtype), seed=local_seed
+                tf.range(size), seed=local_seed
             )
 
     def _convert_to_index_for_coo(self, tensor):

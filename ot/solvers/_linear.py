@@ -1021,7 +1021,7 @@ def solve_sample(
                 "Debiasing is not implemented for TensorFlow backend."
             )
 
-        if isinstance(debias, str) and debias.lower() == "split":
+        if isinstance(debias, str) and debias == "split":
             # split the samples into two halves with each half the mass
             X_a1, X_a2, a1, a2, sel_a1, sel_a2 = split_sample_ratio(X_a, a, nx=nx)
             X_b1, X_b2, b1, b2, sel_b1, sel_b2 = split_sample_ratio(X_b, b, nx=nx)
