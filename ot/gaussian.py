@@ -880,14 +880,14 @@ def empirical_bures_wasserstein_distance_hd(
 
     eigs = nx.eigh(Cs)
     a_s = eigs[0][-ds:]
-    sgm2_s = (nx.trace(Cs) - nx.sum(a_s)) / (p - ds)
+    sgm2_s = (nx.trace(Cs) - nx.sum(a_s)) / (p - ds + reg)
     Qs = eigs[1]
     Us = Qs[:, -ds:]
     ls = a_s - sgm2_s
 
     eigt = nx.eigh(Ct)
     a_t = eigt[0][-dt:]
-    sgm2_t = (nx.trace(Ct) - nx.sum(a_t)) / (p - dt)
+    sgm2_t = (nx.trace(Ct) - nx.sum(a_t)) / (p - dt + reg)
     Qt = eigt[1]
     Ut = Qt[:, -dt:]
     lt = a_t - sgm2_t
