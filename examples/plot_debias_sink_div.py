@@ -160,11 +160,10 @@ pl.legend()
 
 pl.subplot(1, 4, 2)
 ot.plot.plot2D_samples_mat(x1[sel_a1], x1[sel_a2], plan_11, thr=0.05)
-pl.scatter(x1[sel_a1, 0], x1[sel_a1, 1], label="Source distribution", zorder=2)
+pl.scatter(x1[sel_a1, 0], x1[sel_a1, 1], zorder=2)
 pl.scatter(
     x1[sel_a2, 0],
     x1[sel_a2, 1],
-    label="Source distribution",
     zorder=2,
     color="C0",
     alpha=0.5,

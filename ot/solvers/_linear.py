@@ -1404,8 +1404,11 @@ def solve_sample(
         return res
 
 
-def split_samples_ratio(X_a, a, nx, ratio=0.5):
-    "returns a split of the samples and weights according to a ratio"
+def split_samples_ratio(X_a, a, nx=None, ratio=0.5):
+    "Split distribution according to a ratio of weights (using point ordering)."
+
+    if nx is None:
+        nx = get_backend(X_a, a)
 
     n_a = X_a.shape[0]
 
@@ -1443,6 +1446,5 @@ def split_samples_ratio(X_a, a, nx, ratio=0.5):
         X_a2 = X_a[idx_a + 1 :]
         sel_a2 = slice(idx_a + 1, n_a)
         a2 = a02
-    sel_a2 = slice(idx_a, n_a)
 
     return X_a1, X_a2, a1, a2, sel_a1, sel_a2
