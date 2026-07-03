@@ -171,15 +171,6 @@ def bures_wasserstein_mapping_hd(ms, mt, Us, Ut, ls, lt, sigma2_s, sigma2_t, log
     """
     nx = get_backend(ms, mt, Us, Ut, ls, lt, sigma2_s, sigma2_t)
 
-    print(ms.dtype)
-    print(mt.dtype)
-    print(Us.dtype)
-    print(Ut.dtype)
-    print(ls.dtype)
-    print(lt.dtype)
-    print(sigma2_s.dtype)
-    print(sigma2_t.dtype)
-
     p = Us.shape[0]
 
     # source
@@ -429,8 +420,8 @@ def empirical_bures_wasserstein_mapping_hd(
     Ut = Qt[:, -dt:]
     lt = a_t - sgm2_t
 
-    sgm2_s = nx.unsqueeze(sgm2_s, 0)
-    sgm2_t = nx.unsqueeze(sgm2_t, 0)
+    sgm2_s = nx.maximum(nx.unsqueeze(sgm2_s, 0), reg)
+    sgm2_t = nx.maximum(nx.unsqueeze(sgm2_t, 0), reg)
 
     if log:
         A, b, log = bures_wasserstein_mapping_hd(
@@ -901,8 +892,8 @@ def empirical_bures_wasserstein_distance_hd(
     Ut = Qt[:, -dt:]
     lt = a_t - sgm2_t
 
-    sgm2_s = nx.unsqueeze(sgm2_s, 0)
-    sgm2_t = nx.unsqueeze(sgm2_t, 0)
+    sgm2_s = nx.maximum(nx.unsqueeze(sgm2_s, 0), reg)
+    sgm2_t = nx.maximum(nx.unsqueeze(sgm2_t, 0), reg)
 
     if log:
         W, log = bures_wasserstein_distance_hd(
