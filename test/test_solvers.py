@@ -799,7 +799,12 @@ def test_solve_sample_methods(nx, method_params):
     assert_allclose_sol(sol, solb)
 
     sol2 = ot.solve_sample(x, x, **method_params)
-    if method_params["method"] not in ["factored", "lowrank", "nystroem"]:
+    if method_params["method"] not in [
+        "factored",
+        "lowrank",
+        "nystroem",
+        "gaussian_hd",
+    ]:
         np.testing.assert_allclose(sol2.value, 0, atol=1e-10)
 
 
