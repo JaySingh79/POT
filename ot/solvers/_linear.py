@@ -1139,12 +1139,8 @@ def solve_sample(
             resab2 = solve_sample(X_a2, X_b2, a=a2, b=b2, **dict_params)
 
             # compute debiased values
-            value = 0.5 * (resab1.value + resab2.value) - 0.5 * (
-                resaa.value + resbb.value
-            )
-            value_linear = 0.5 * (resab1.value_linear + resab2.value_linear) - 0.5 * (
-                resaa.value_linear + resbb.value_linear
-            )
+            value = (resab1.value + resab2.value) - (resaa.value + resbb.value)
+            value_linear = value
 
             log = {
                 "res_aa": resaa,
