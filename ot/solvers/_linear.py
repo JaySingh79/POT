@@ -8,7 +8,7 @@ General OT solvers with unified API
 #
 # License: MIT License
 
-from ..utils import OTResult, dist
+from ..utils import OTResult, dist, split_sample_ratio
 from ..lp import emd2, emd2_lazy, wasserstein_1d
 from ..backend import get_backend
 from ..unbalanced import mm_unbalanced, sinkhorn_knopp_unbalanced, lbfgsb_unbalanced
@@ -1023,8 +1023,8 @@ def solve_sample(
 
         if isinstance(debias, str) and debias.lower() == "split":
             # split the samples into two halves with each half the mass
-            X_a1, X_a2, a1, a2, sel_a1, sel_a2 = split_samples_ratio(X_a, a, nx)
-            X_b1, X_b2, b1, b2, sel_b1, sel_b2 = split_samples_ratio(X_b, b, nx)
+            X_a1, X_a2, a1, a2, sel_a1, sel_a2 = split_sample_ratio(X_a, a, nx=nx)
+            X_b1, X_b2, b1, b2, sel_b1, sel_b2 = split_sample_ratio(X_b, b, nx=nx)
 
             # compute the four OT problems
             resaa = solve_sample(X_a1, X_a2, a=a1, b=a2, **dict_params)
@@ -1402,49 +1402,3 @@ def solve_sample(
             log=log,
         )
         return res
-
-
-def split_samples_ratio(X_a, a, nx=None, ratio=0.5):
-    "Split distribution according to a ratio of weights (using point ordering)."
-
-    if nx is None:
-        nx = get_backend(X_a, a)
-
-    n_a = X_a.shape[0]
-
-    if a is None:
-        a = nx.ones(n_a, type_as=X_a) / n_a
-
-        # find the split indices
-    acs = nx.cumsum(a)
-
-    thr_a = ratio * nx.sum(a)
-
-    idx_a = nx.searchsorted(acs, thr_a, side="right")
-
-    # split the samples and weights
-    X_a1, X_a2 = X_a[: idx_a + 1], X_a[idx_a:]
-
-    # compute weights for each half and adjust the last/first weight to sum to 0.5
-    a01, a02 = a[:idx_a], a[idx_a + 1 :]
-    v_idx = a[idx_a]
-    a1_1 = nx.maximum(v_idx * nx.detach((thr_a - nx.sum(a01)) / v_idx), 0)
-    a2_0 = nx.maximum(v_idx * nx.detach((nx.sum(a) - thr_a - nx.sum(a02)) / v_idx), 0)
-    # concat mass or remove samples if mass is 0
-    if a1_1 > 0:
-        a1 = nx.concatenate([a01, nx.reshape(a1_1, (1,))])
-        sel_a1 = slice(0, idx_a + 1)
-    else:
-        X_a1 = X_a[:idx_a]
-        sel_a1 = slice(0, idx_a)
-        a1 = a01
-
-    if a2_0 > 0:
-        a2 = nx.concatenate([nx.reshape(a2_0, (1,)), a02])
-        sel_a2 = slice(idx_a, n_a)
-    else:
-        X_a2 = X_a[idx_a + 1 :]
-        sel_a2 = slice(idx_a + 1, n_a)
-        a2 = a02
-
-    return X_a1, X_a2, a1, a2, sel_a1, sel_a2
