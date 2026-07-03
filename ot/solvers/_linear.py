@@ -1381,9 +1381,9 @@ def solve_sample(
             if reg is None:
                 reg = 1e-6
 
-            if len(a.shape) == 1:
+            if a is not None and len(a.shape) == 1:
                 a = a.reshape(-1, 1)
-            if len(b.shape) == 1:
+            if b is not None and len(b.shape) == 1:
                 b = b.reshape(-1, 1)
 
             value, log = empirical_bures_wasserstein_distance(
@@ -1401,9 +1401,9 @@ def solve_sample(
             if reg is None:
                 reg = 1e-5
 
-            if len(a.shape) == 1:
+            if a is not None and len(a.shape) == 1:
                 a = a.reshape(-1, 1)
-            if len(b.shape) == 1:
+            if b is not None and len(b.shape) == 1:
                 b = b.reshape(-1, 1)
 
             if rank > X_a.shape[1] or rank > X_b.shape[1]:
