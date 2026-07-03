@@ -46,6 +46,7 @@ The release finally includes several bug fixes and performance improvements, as 
 - Update the geomloss wrapper to the new version and API (PR #826)
 - Fix docstrings for `lowrank_gromov_wasserstein_samples` and `lowrank_sinkhorn` (PR #823)
 - Reorganize all tests per backend (PR #828)
+- Update sgot cost function and example (PR #830)
 
 
 #### Closed issues
