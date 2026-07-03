@@ -847,6 +847,24 @@ def test_solve_sample_bsp(nx):
         ot.solve_sample(x, y[:5], method="bsp")
 
 
+def test_solvers_bad_method():
+    n_samples_s = 20
+    n_samples_t = 7
+    n_features = 2
+    rng = np.random.RandomState(0)
+
+    x = rng.randn(n_samples_s, n_features)
+    y = rng.randn(n_samples_t, n_features)
+
+    C = ot.dist(x, y)
+
+    with pytest.raises(ValueError):
+        ot.solve_sample(x, y, method="invalid_method")
+
+    with pytest.raises(ValueError):
+        ot.solve(C, method="invalid_method")
+
+
 @pytest.mark.parametrize("method_params", lst_parameters_solve_sample_NotImplemented)
 def test_solve_sample_NotImplemented(nx, method_params):
     n_samples_s = 20
