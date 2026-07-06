@@ -768,7 +768,8 @@ def solve_sample(
     projections : array-like, shape (n_projections, dim), optional
         Projections for sliced OT, by default None (random projections are used)
     scaler : callable, optional
-        Function to scale the input data, by default None (no scaling)
+        Function to scale the input data, following :any:`ot.utils.apply_scaler`.
+        by default None (no scaling).
 
     Returns
     -------

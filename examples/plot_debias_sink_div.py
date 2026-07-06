@@ -5,7 +5,7 @@ Sinkhorn Divergence and Debiased OT solvers
 ======================================
 
 This example shows how to use the debiased OT solvers in `ot.solve_sample` to
-compute Sinkhorn divergences and debiased Minibtach solutions. The debiased OT solvers
+compute Sinkhorn divergences and debiased Minibatch solutions. The debiased OT solvers
 can be used with balanced and unbalanced OT problems, and with different
 regularization types (entropic, L2, group lasso).
 """
@@ -114,7 +114,7 @@ pl.title("Plan between target and target")
 # ---------------------------------
 #
 # Doing OT on minibatches leads to a similar bias than using entropic
-# regularization since the average OT plan is densified to to the stochasticity
+# regularization since the average OT plan is densified due to the stochasticity
 # of the minibatch sampling.  On a given minibatch, the debiased loss can be
 # computed by setting the `debias` parameter to `'split'`that split the data
 # points in each distributions in two and computes the debias OT loss as:
