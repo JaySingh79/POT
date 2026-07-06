@@ -691,17 +691,17 @@ def solve_sample(
     c : array-like, shape (dim_a, dim_b), optional (default=None)
         Reference measure for the regularization.
         If None, then use :math:`\mathbf{c} = \mathbf{a} \mathbf{b}^T`.
-        If :math:`\texttt{reg_type}=`'entropy', then :math:`\mathbf{c} = 1_{dim_a} 1_{dim_b}^T`.
+        If `reg_type='entropy'`, then :math:`\mathbf{c} = 1_{dim_a} 1_{dim_b}^T`.
     reg_type : str, optional
         Type of regularization :math:`R`  either "KL", "L2", "entropy", by default "KL"
     unbalanced : float or indexable object of length 1 or 2
         Marginal relaxation term.
         If it is a scalar or an indexable object of length 1,
         then the same relaxation is applied to both marginal relaxations.
-        The balanced OT can be recovered using :math:`unbalanced=float("inf")`.
+        The balanced OT can be recovered using `unbalanced=float("inf")`.
         For semi-relaxed case, use either
-        :math:`unbalanced=(float("inf"), scalar)` or
-        :math:`unbalanced=(scalar, float("inf"))`.
+        `unbalanced=(float("inf"), scalar)` or
+        `unbalanced=(scalar, float("inf"))`.
         If unbalanced is an array,
         it must have the same backend as input arrays `(a, b, M)`.
     unbalanced_type : str, optional
@@ -716,6 +716,7 @@ def solve_sample(
         Method for solving the problem, this can be used to select the solver
         for unbalanced problems (see :any:`ot.solve`), or to select a specific
         large scale solver. Available methods are:
+
         - "1d" for 1D OT solver done in parallel for each dimension.
         - "gaussian" for Gaussian OT solver that estimates mean and
               covariance and solve the closed form solution)
@@ -726,7 +727,7 @@ def solve_sample(
         - "geomloss" for GeomLoss Sinkhorn solver
         - "sliced" for sliced wasserstein distance (see :any:`ot.sliced`)
         - "max_sliced" for max sliced wasserstein distance (see
-          :any:`ot.max_sliced`)
+          :any:`ot.sliced`)
         - "bsp" for BSP-OT solver (only for distribution with same number of
           samples and uniform weights)
     n_threads : int, optional

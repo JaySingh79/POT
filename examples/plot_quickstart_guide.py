@@ -594,6 +594,10 @@ print(f"Bures-Wasserstein distance = {bw_value:1.3f}")
 print(f"High Dimensional Bures-Wasserstein distance = {hdbw_value}")
 
 # %%
+# .. note::
+#    The Gaussian Wasserstein problem can be solved with the classic API using the
+#    :func:`ot.gaussian.empirical_bures_wasserstein_distance` function.
+#
 # Sliced Wasserstein
 # ~~~~~~~~~~~~~~~~~~
 #
@@ -620,7 +624,7 @@ print(f"Max Sliced Wasserstein distance = {max_sw_value:1.3f}")
 # partitioning of the space and computes the Wasserstein distance between the
 # empirical distributions by solving small OT problems between the samples in each
 # partition. The number of partitions can be controlled with the
-# code:`n_projections` parameter.
+# `n_projections` parameter.
 
 # BSP can only find bijections so require same number of points
 x1_bsp = np.concatenate([x1, x1], axis=0)
@@ -640,10 +644,6 @@ pl.show()
 
 # sphinx_gallery_end_ignore
 # %%
-# .. note::
-#    The Gaussian Wasserstein problem can be solved with the classic API using the
-#    :func:`ot.gaussian.empirical_bures_wasserstein_distance` function.
-#
 # Comparing all OT plans
 # ----------------------
 #
