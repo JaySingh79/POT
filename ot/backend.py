@@ -1867,9 +1867,7 @@ class JaxBackend(Backend):
         if not isinstance(size, int):
             raise ValueError("size must be an integer")
         if type_as is not None:
-            return jnp.asarray(
-                jax.random.permutation(subkey, size), dtype=type_as.dtype
-            )
+            return jnp.asarray(jax.random.permutation(subkey, size))
         else:
             return jax.random.permutation(subkey, size)
 
