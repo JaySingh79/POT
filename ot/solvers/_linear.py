@@ -1055,7 +1055,7 @@ def solve_sample(
         Optimal Transport. Proceedings of the Twenty-First International
         Conference on Artificial Intelligence and Statistics (AISTATS).
 
-    ..[23] Aude, G., Peyré, G., Cuturi, M., Learning Generative Models with
+    .. [23] Aude, G., Peyré, G., Cuturi, M., Learning Generative Models with
         Sinkhorn Divergences, Proceedings of the Twenty-First International
         Conference on Artificial Intelligence and Statistics, (AISTATS) 21, 2018
 
