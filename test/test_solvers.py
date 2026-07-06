@@ -33,11 +33,14 @@ lst_method_params_solve_sample = [
     {"method": "gaussian"},
     {"method": "gaussian", "reg": 1},
     {"method": "gaussian_hd", "rank": 1},
+    {"method": "gaussian_hd", "rank": 3},
     {"method": "factored", "rank": 2},
     {"method": "lowrank", "rank": 2, "max_iter": 5},
     {"method": "nystroem", "rank": 2},
     {"method": "sliced", "n_projections": 10},
+    {"method": "sliced", "n_projections": 10, "metric": "euclidean"},
     {"method": "max_sliced", "n_projections": 10},
+    {"method": "max_sliced", "n_projections": 10, "metric": "euclidean"},
 ]
 
 lst_parameters_solve_sample_NotImplemented = [
@@ -806,6 +809,32 @@ def test_solve_sample_methods(nx, method_params):
         "gaussian_hd",
     ]:
         np.testing.assert_allclose(sol2.value, 0, atol=1e-10)
+
+
+def test_zero_mass_solvers():
+    # test that solvers handle zero mass distributions correctly
+    n_samples_s = 10
+    n_samples_t = 9
+    n_features = 2
+    rng = np.random.RandomState(42)
+
+    x = rng.randn(n_samples_s, n_features)
+    y = rng.randn(n_samples_t, n_features)
+    a = ot.utils.unif(n_samples_s)
+    b = ot.utils.unif(n_samples_t)
+
+    # Set one of the distributions to zero mass
+    a[0] = 0.0
+    b[0] = 0.0
+
+    a /= a.sum()
+    b /= b.sum()
+
+    res = ot.solve_sample(x, y, a, b)
+    res_reg = ot.solve_sample(x, y, a, b, reg=1.0)
+
+    assert np.isnan(res.value) == False
+    assert np.isnan(res_reg.value) == False
 
 
 @pytest.skip_backend("tf", reason="Not implemented for tf backend")

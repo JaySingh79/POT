@@ -490,13 +490,13 @@ def solve(
                 else:
                     # stabilize kl of 0 mass
                     if nx.any(a == 0) or nx.any(b == 0):
-                        a = a + 1e-16 * nx.min(a)
-                        b = b + 1e-16 * nx.min(b)
+                        a = a + 1e-15 * nx.min(a)
+                        b = b + 1e-15 * nx.min(b)
                         print(
                             "Warning: a or b has 0 mass, adding small mass to avoid NaN in KL divergence."
                         )
                     value = value_linear + reg * nx.kl_div(
-                        plan, a[:, None] * b[None, :]
+                        plan, a[:, None] * b[None, :] + 1e-15
                     )
 
                 if grad == "envelope":  # set the gradient at convergence

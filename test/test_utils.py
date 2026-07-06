@@ -975,7 +975,7 @@ def test_split_sample_ratio(nx, ratio, n, random):
 
     # test uniform weights
     X1, X2, a1, a2, id1, id2 = ot.utils.split_sample_ratio(
-        X, ratio=ratio, random_state=seed, nx=nx
+        X, ratio=ratio, random_split=random, random_state=seed, nx=nx
     )
 
     np.testing.assert_allclose(nx.to_numpy(a1).sum(), ratio, atol=1e-5)
@@ -986,7 +986,7 @@ def test_split_sample_ratio(nx, ratio, n, random):
 
     # test non uniform weights
     X1, X2, a1, a2, id1, id2 = ot.utils.split_sample_ratio(
-        X, ratio=ratio, a=a, random_state=seed
+        X, ratio=ratio, a=a, random_split=random, random_state=seed
     )
 
     with pytest.raises(ValueError):
