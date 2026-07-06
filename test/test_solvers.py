@@ -894,7 +894,7 @@ def test_solve_sample_bsp(nx):
         # bsp method requires same number of samples for source and target
         ot.solve_sample(x, y[:5], method="bsp")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(NotImplementedError):
         # bsp method requires same number of samples for source and target
         ot.solve_sample(x, y, method="bsp", metric="wrong_metric")
 
