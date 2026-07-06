@@ -14,6 +14,7 @@ import ot
 from ot.bregman import geomloss
 from ot.backend import torch
 from ot.solvers._linear import lst_method_solve_sample
+from ot.utils import DataScaler
 
 
 lst_reg = [None, 0.1]
@@ -50,6 +51,10 @@ lst_parameters_solve_sample_NotImplemented = [
         "metric": "euclidean",
     },  # fail gaussian on metric not euclidean
     {
+        "method": "gaussian_hd",
+        "metric": "euclidean",
+    },  # fail gaussian on metric not euclidean
+    {
         "method": "factored",
         "metric": "euclidean",
     },  # fail factored on metric not euclidean
@@ -67,6 +72,14 @@ lst_parameters_solve_sample_NotImplemented = [
         "reg": 1,
         "unbalanced": 1,
     },  # fail lazy for unbalanced and regularized
+    {
+        "method": "sliced",
+        "metric": "wrong_metric",
+    },  # fail sliced on metric not euclidean
+    {
+        "method": "max_sliced",
+        "metric": "wrong_metric",
+    },  # fail sliced on metric not euclidean
 ]
 
 lst_parameters_solve_bary_sample_NotImplemented = [
@@ -881,6 +894,10 @@ def test_solve_sample_bsp(nx):
         # bsp method requires same number of samples for source and target
         ot.solve_sample(x, y[:5], method="bsp")
 
+    with pytest.raises(ValueError):
+        # bsp method requires same number of samples for source and target
+        ot.solve_sample(x, y, method="bsp", metric="wrong_metric")
+
 
 def test_solvers_bad_method():
     n_samples_s = 20
@@ -898,6 +915,32 @@ def test_solvers_bad_method():
 
     with pytest.raises(ValueError):
         ot.solve(C, method="invalid_method")
+
+
+@pytest.mark.parametrize("norm", ["standard", "minmax", "l2"])
+def test_solve_sample_scaler(nx, norm):
+    n_samples_s = 20
+    n_samples_t = 7
+    n_features = 2
+    rng = np.random.RandomState(0)
+
+    x = rng.randn(n_samples_s, n_features)
+    y = rng.randn(n_samples_t, n_features)
+    a = ot.utils.unif(n_samples_s)
+    b = ot.utils.unif(n_samples_t)
+
+    xb, yb, ab, bb = nx.from_numpy(x, y, a, b)
+
+    scaler0 = DataScaler(norm=norm)
+    scaler0.fit(x)
+
+    scaler1 = DataScaler(norm=norm)
+    scaler1.fit(xb)
+
+    sol0 = ot.solve_sample(x, y, a, b, scaler=scaler0)
+    sol1 = ot.solve_sample(xb, yb, ab, bb, scaler=scaler1)
+
+    assert_allclose_sol(sol0, sol1)
 
 
 @pytest.mark.parametrize("method_params", lst_parameters_solve_sample_NotImplemented)
