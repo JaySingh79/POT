@@ -1,5 +1,10 @@
 # Releases
 
+## 0.9.7.post1
+
+This release is identical to 0.9.7 but will allow the upload of a source distribution to PyPI and release on conda-forge (that requires a source distribution).
+
+
 ## 0.9.7
 
 This release contains several bug fixes and performance improvements, as well as updates to the documentation and examples and tests. We provide below a summary of the main new features and closed issues.
