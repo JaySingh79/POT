@@ -2,6 +2,10 @@
 
 ## 0.9.8dev
 
+#### New features
+
+- Add stereographic spherical sliced Wasserstein distance in `ot.sliced.stereographic_sliced_wasserstein_sphere`, with its rotationally invariant extension (PR #836)
+
 #### Closed issues
 
 - Fix mean centering in `ot.dr.fda` and `ot.dr.wda`: `np.mean(X)` returned a scalar instead of the per-feature mean, so `proj` did not center the data as documented. In `ot.dr.fda` the same pattern in the class means made the between-class scatter matrix independent of which features separate the classes, and FDA returned a non-discriminant direction (PR #840)
